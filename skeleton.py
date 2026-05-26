@@ -48,14 +48,6 @@ class Task:
 
     __repr__ = __str__
 
-    #def free_slots(self):
-    #код Стёпы
-    #    return free_slots
-
-    #def movable_slots(self):
-    #код Стёпы
-    #    return movable_slots
-
     @staticmethod
     def summon_task(date):
         name = date
@@ -142,7 +134,7 @@ class Task:
 
         for num in listik:
             for key, thing in all_slots_c.items():
-                number = (len(all_slots_c) - num) * sum(thing.values()) * math.prod(thing.values()) / self.difficulty #!!!!!!!!!!!!!!!!!!!!!!! НАДО ИСПРАВИТЬ ATTRIBUTEERROR (thing.values)
+                number = (len(all_slots_c) - num) * sum(thing.values()) * math.prod(thing.values()) / self.difficulty
                 if number not in dict_of_priority_days.keys():
                     dict_of_priority_days[number] = key
                 else:
