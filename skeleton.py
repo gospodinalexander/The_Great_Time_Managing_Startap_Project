@@ -12,6 +12,20 @@ movable_slots_1 = {
     '02': {'15:00-16:00': 1}
 }
 
+free_slots_2 = {
+    '10': {'10:00-14:00': 4, '20:00-21:30': 1.5},
+    '11': {'15:00-16:00': 1},
+    '12': {'16:00-20:00': 2},
+}
+
+movable_slots_2 = {
+    '10': {'14:00-17:00': 3}
+}
+
+def place_task(string):
+
+    return
+
 def time_to_minutes(time_str):
 
     hours, minutes = map(int, time_str.split(':'))
@@ -31,12 +45,19 @@ def minutes_to_time(minutes):
 
     return f"{hours:02}:{mins:02}"
 
+def get_free_events_untill(string):
+    return free_slots_2
+
+def get_events_until(string):
+    return movable_slots_2
+
+
 class Task:
-    def __init__(self, name, start, end, ttype, difficulty, sep=bool):
+    def __init__(self, name, start, end, ttype, difficulty, sep=False):
         self.name = name
         self.start = start
         self.end = end
-        self.timeleft = self.end - time.time()
+        self.timeleft = self.end - 0#time.time()
         self.ttype = ttype
         self.difficulty = difficulty
         self.sep = sep
@@ -54,6 +75,16 @@ class Task:
     #код Стёпы
     #    return movable_slots
 
+    @staticmethod
+    def summon_task(date):
+        name = date
+        start = 'idk'
+        end = 3
+        ttype = 1
+        difficulty = 3
+        word = Task(name, start, end, ttype, difficulty)
+        return word
+
     def slot_choice(self, dict_of_priority_days, all_slots):
 
         best_day = all_slots[dict_of_priority_days[max(dict_of_priority_days.keys())]]
@@ -62,13 +93,50 @@ class Task:
             if self.difficulty >= time_to_hours(value):
                 possible_slots[key] = value
 
-        #if len(possible_slots) == 0:
-        #    rule_braking()
+        if len(possible_slots) == 0:
+            if len(dict_of_priority_days) == 1:
+                print('fuck this shit')
+            #    rule_braking()
+            else:
+                del dict_of_priority_days[max(dict_of_priority_days.keys())]
+                self.slot_choice(dict_of_priority_days, all_slots)
+
 
         if len(possible_slots) > 1:
             possible_slots = sorted(possible_slots.items(), key=lambda item: item[1])
 
         return possible_slots
+
+
+    def placing_or_comparison(self, possible_slots, free_slots, movable_slots):
+
+        if [possible_slots.keys()][0] not in movable_slots.keys():
+            place_task([possible_slots.keys()][0])
+            print([possible_slots.keys()][0])
+            print('Задание добавлено')
+
+            return True
+
+        else:
+            replaceable_task = self.summon_task([possible_slots.keys()][0])
+
+            if replaceable_task.timeleft <= self.timeleft:
+                if len(possible_slots) == 1:
+
+                    return False
+
+                else:
+                    del possible_slots[[possible_slots.keys()][0]]
+                    self.placing_or_comparison(possible_slots, free_slots, movable_slots)
+
+                    return True
+
+            else:
+                place_task([possible_slots.keys()][0])
+                replaceable_task.priority_slot(get_free_events_untill(replaceable_task.end), get_events_until(replaceable_task.end))
+                print('Задание добавлено вместо другого. Ищем подходящий слот для замененного.')
+
+                return True
 
 
     def priority_slot(self, free_slots, movable_slots):
@@ -81,33 +149,37 @@ class Task:
             if i not in movable_slots_c.keys():
                 all_slots[i] = free_slots_c[i]
             else:
-                all_slots[i] = movable_slots_c[i].extend(free_slots_c[i])
-                all_slots[i] = sorted(all_slots[i])
+                all_slots[i] = movable_slots_c[i].update(free_slots_c[i])
 
         all_slots_c = all_slots.copy()
         dict_of_priority_days = {}
 
-        for num, key, thing in enumerate(all_slots_c.items()):
-            number = (len(thing.values()) - num) * sum(time_to_hours(j) for j in thing.values()) * math.prod(time_to_hours(j) for j in thing.values()) / self.difficulty
-            if number not in dict_of_priority_days.keys():
-                dict_of_priority_days[number] = key
-            else:
-                dict_of_priority_days[number - 1] = key
+        listik = []
+        for i in range(len(all_slots_c)):
+            listik.append(i)
+        
+        
+        for num in listik:
+            for key, thing in all_slots_c.items():
+                number = (len(all_slots_c) - num) * sum(j for j in thing.values()) * math.prod(j for j in thing.values()) / self.difficulty #!!!!!!!!!!!!!!!!!!!!!!! НАДО ИСПРАВИТЬ ATTRIBUTEERROR (thing.values)
+                if number not in dict_of_priority_days.keys():
+                    dict_of_priority_days[number] = key
+                else:
+                    dict_of_priority_days[number - 1] = key
 
         possible_slots = self.slot_choice(dict_of_priority_days, all_slots)
 
-        if [possible_slots.keys()][0] not in movable_slots_c.keys():
-
-            place_task([possible_slots.keys()][0])
-
-        else:
-            replacable_task = summon_task([possible_slots.keys()][0])
-
-            if replacable_task.time_left <= self.timeleft:
-                if len(possible_slots) == 1:
-
-
+        while not self.placing_or_comparison(possible_slots, free_slots, movable_slots):
+            if len(dict_of_priority_days) == 1:
+                print('fuck this shit')
+                break
+            #   rule_braking()
             else:
-                place_task([possible_slots.keys()][0])
-                replacable_task.priority_slot(get_free_events_untill(replacable_task.end), get_events_until(replacable_task.end))
+                del dict_of_priority_days[max(dict_of_priority_days.keys())]
+                self.slot_choice(dict_of_priority_days, all_slots)
 
+        return
+
+
+new_task = Task('hahaha', '02.01', int(input()), 1, int(input()))
+new_task.priority_slot(free_slots_1, movable_slots_1)
