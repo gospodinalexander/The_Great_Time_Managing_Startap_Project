@@ -144,7 +144,7 @@ class Task:
 
         while not self.placing_or_comparison(possible_slots, free_slots, movable_slots):
             if len(dict_of_priority_days) == 1:
-                print('fuck this shit')
+                print('fts')
                 break
             #   rule_braking()
             else:
